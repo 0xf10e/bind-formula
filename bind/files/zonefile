@@ -1,0 +1,16 @@
+{# taken from Alan Braithwaite's "Bind Zone File in Saltstack":
+https://gist.github.com/abraithwaite/5e5daae2ec70f5a3312a -#}
+$ORIGIN salt.example.com.
+$TTL 60     ; 1 minute
+{% set serial = salt['cmd.run']('date +%Y%m%d%H') %}
+@   IN  SOA ns1.salt.example.com. root.salt.example.com. (
+        {{ serial }}        ; serial
+        604800     ; refresh (1 week)
+        86400      ; retry (1 day)
+        2419200    ; expire (4 weeks)
+        604800     ; minimum (1 week)
+        )
+@       NS  ns1.salt.example.com.
+@       NS  ns2.salt.example.com.
+{% for host, grains in salt['mine.get']('*', 'grains.items').items() %}{{ grains['host'] }}     A   {{ grains['ip_interfaces']['eth0'][0] }}
+{% endfor %}
