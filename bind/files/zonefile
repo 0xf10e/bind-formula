@@ -12,5 +12,7 @@ $TTL 60     ; 1 minute
         )
 @       NS  ns1.salt.example.com.
 @       NS  ns2.salt.example.com.
-{% for host, grains in salt['mine.get']('*', 'grains.items').items() %}{{ grains['host'] }}     A   {{ grains['ip_interfaces']['eth0'][0] }}
+{% for name, ipaddr in salt['pillar.get'](
+    'bind:zones:salt.example.com', {}).items() %}
+{{ name }}     A   {{ ipaddr }}
 {% endfor %}
