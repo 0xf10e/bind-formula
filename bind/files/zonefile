@@ -1,7 +1,11 @@
+{% macro fill(string, width) -%}
+{{ string }}
+    {%- for n in range(0, width - string|length) %} {% endfor %}
+{%- endmacro %}
 {# based on Alan Braithwaite's "Bind Zone File in Saltstack":
 https://gist.github.com/abraithwaite/5e5daae2ec70f5a3312a -#}
 $ORIGIN {{ zone }}.
-$TTL {{ data.get('TTL', '14400 ; 4 hours') }}
+$TTL    {{ data.get('TTL', '14400 ; 4 hours') }}
 {% set serial = salt['cmd.run']('date +%Y%m%d%H') %}
 @   IN  SOA ns1.salt.example.com. root.salt.example.com. (
         {{ serial }}        ; serial
@@ -10,12 +14,17 @@ $TTL {{ data.get('TTL', '14400 ; 4 hours') }}
         2419200    ; expire (4 weeks)
         604800     ; minimum (1 week)
         )
-@       NS  ns1.salt.example.com.
-@       NS  ns2.salt.example.com.
+{%- for ns in data['NS'] %}
+  {%- if ns.endswith('.') %}
+@       NS  {{ ns }}
+  {%- else %}
+@       NS  {{ ns }}.{{ zone }}.
+  {%- endif %}
+{%- endfor %}
 {% for type in ['A', 'AAAA'] %}
   {%- if type in data %}
     {%- for name, value in data[type].items() %}
-{{ name }}    {{ type }}   {{ value }}
+{{ fill(name,11) }} {{ fill(type,5) }} {{ value }}
     {%- endfor %}
   {% endif %}
 {%- endfor %}
