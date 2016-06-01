@@ -6,6 +6,9 @@
     - user: root
     - group: bind
     - mode: 644
+    - context:
+        zone: {{ zone }}
+        data: {{ salt['pillar.get']('bind:zones:' + zone) }}
   cmd.run:
     - name: named-checkzone {{ zone }} /etc/bind/db.{{ zone }}
     - require:
