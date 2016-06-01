@@ -131,8 +131,8 @@ bind_default_zones:
 {% endif %}
 
 {% for zone, zone_data in salt['pillar.get']('bind:configured_zones', {}).iteritems() -%}
-{%- set file = salt['pillar.get']("bind:available_zones:" + zone + ":file") %}
-{% if file and zone_data['type'] == "master" -%}
+    {%- set file = salt['pillar.get']("bind:available_zones:" + zone + ":file") %}
+    {%- if file and zone_data['type'] == "master" -%}
 zones-{{ zone }}:
   file.managed:
     - name: {{ map.named_directory }}/{{ file }}
@@ -145,22 +145,21 @@ zones-{{ zone }}:
     - require:
       - file: named_directory
 
-{% if zone_data['dnssec'] is defined and zone_data['dnssec'] -%}
+        {% if zone_data['dnssec'] is defined and zone_data['dnssec'] -%}
 signed-{{ zone }}:
   cmd.run:
     - cwd: {{ map.named_directory }}
     - name: zonesigner -zone {{ zone }} {{ file }}
     - prereq:
       - file: zones-{{ zone }}
-{% endif %}
+        {%- endif %}
+    {%- endif %}
+{%- endfor %}
 
-{% endif %}
-{% endfor %}
-
-{%- for view, view_data in salt['pillar.get']('bind:configured_views', {}).iteritems() %}
-{% for zone, zone_data in view_data.get('configured_zones', {}).iteritems() -%}
-{%- set file = salt['pillar.get']("bind:available_zones:" + zone + ":file") %}
-{% if file and zone_data['type'] == "master" -%}
+{% for view, view_data in salt['pillar.get']('bind:configured_views', {}).iteritems() %}
+    {%- for zone, zone_data in view_data.get('configured_zones', {}).iteritems() -%}
+        {%- set file = salt['pillar.get']("bind:available_zones:" + zone + ":file") %}
+        {%- if file and zone_data['type'] == "master" -%}
 zones-{{ view }}-{{ zone }}:
   file.managed:
     - name: {{ map.named_directory }}/{{ file }}
@@ -173,15 +172,14 @@ zones-{{ view }}-{{ zone }}:
     - require:
       - file: named_directory
 
-{% if zone_data['dnssec'] is defined and zone_data['dnssec'] -%}
+            {% if zone_data['dnssec'] is defined and zone_data['dnssec'] -%}
 signed-{{ view }}-{{ zone }}:
   cmd.run:
     - cwd: {{ map.named_directory }}
     - name: zonesigner -zone {{ zone }} {{ file }}
     - prereq:
       - file: zones-{{ view }}-{{ zone }}
-{% endif %}
-
-{% endif %}
-{% endfor %}
+            {% endif %}
+        {% endif %}
+    {% endfor %}
 {% endfor %}
