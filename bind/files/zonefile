@@ -1,7 +1,7 @@
-{# taken from Alan Braithwaite's "Bind Zone File in Saltstack":
+{# based on Alan Braithwaite's "Bind Zone File in Saltstack":
 https://gist.github.com/abraithwaite/5e5daae2ec70f5a3312a -#}
-$ORIGIN salt.example.com.
-$TTL 60     ; 1 minute
+$ORIGIN {{ zone }}.
+$TTL {{ data.get('TTL', '14400 ; 4 hours') }}
 {% set serial = salt['cmd.run']('date +%Y%m%d%H') %}
 @   IN  SOA ns1.salt.example.com. root.salt.example.com. (
         {{ serial }}        ; serial
@@ -12,7 +12,10 @@ $TTL 60     ; 1 minute
         )
 @       NS  ns1.salt.example.com.
 @       NS  ns2.salt.example.com.
-{% for name, ipaddr in salt['pillar.get'](
-    'bind:zones:salt.example.com', {}).items() %}
-{{ name }}     A   {{ ipaddr }}
-{% endfor %}
+{% for type in ['A', 'AAAA'] %}
+  {%- if type in data %}
+    {%- for name, value in data[type].items() %}
+{{ name }}    {{ type }}   {{ value }}
+    {%- endfor %}
+  {% endif %}
+{%- endfor %}
