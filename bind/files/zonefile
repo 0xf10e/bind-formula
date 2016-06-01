@@ -21,7 +21,7 @@ $TTL    {{ data.get('TTL', '14400 ; 4 hours') }}
 @       NS  {{ ns }}.{{ zone }}.
   {%- endif %}
 {%- endfor %}
-{% for type in ['A', 'AAAA'] %}
+{% for type in ['A', 'AAAA', 'CNAME'] %}
   {%- if type in data %}
     {%- for name, value in data[type].items() %}
 {{ fill(name,11) }} {{ fill(type,5) }} {{ value }}
